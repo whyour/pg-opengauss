@@ -11,3 +11,4 @@ dist
 manually-test-on-heroku.js
 yarn.lock
 .history
+pnpm-lock.yaml
