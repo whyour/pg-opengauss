@@ -26,7 +26,7 @@
     "eslint-plugin-prettier": "^3.1.4",
     "lerna": "^3.19.0",
     "prettier": "2.1.2",
-    "typescript": "^4.3.5"
+    "typescript": "^4.0.3"
   },
   "prettier": {
     "semi": false,
@@ -34,8 +34,5 @@
     "arrowParens": "always",
     "trailingComma": "es5",
     "singleQuote": true
-  },
-  "dependencies": {
-    "yarn": "^1.22.11"
   }
 }

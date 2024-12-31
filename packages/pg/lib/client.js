@@ -4,7 +4,6 @@ var EventEmitter = require('events').EventEmitter
 var util = require('util')
 var utils = require('./utils')
 var sasl = require('./sasl')
-var rfc5802 = require('./rfc5802')
 var pgPass = require('pgpass')
 var TypeOverrides = require('./type-overrides')
 
@@ -179,10 +178,6 @@ class Client extends EventEmitter {
     con.on('authenticationCleartextPassword', this._handleAuthCleartextPassword.bind(this))
     // password request handling
     con.on('authenticationMD5Password', this._handleAuthMD5Password.bind(this))
-    // password request handling
-    con.on('authenticationSHA256Password', this._handleAuthSHA256Password.bind(this))
-    // password request handling
-    con.on('authenticationMD5SHA256Password', this._handleAuthMD5SHA256Password.bind(this))
     // password request handling (SASL)
     con.on('authenticationSASL', this._handleAuthSASL.bind(this))
     con.on('authenticationSASLContinue', this._handleAuthSASLContinue.bind(this))
@@ -247,20 +242,6 @@ class Client extends EventEmitter {
   _handleAuthMD5Password(msg) {
     this._checkPgPass(() => {
       const hashedPassword = utils.postgresMd5PasswordHash(this.user, this.password, msg.salt)
-      this.connection.password(hashedPassword)
-    })
-  }
-
-  _handleAuthSHA256Password(msg) {
-    this._checkPgPass(() => {
-      const hashedPassword = rfc5802.postgresSha256PasswordHash(this.password, msg.random64code, msg.token, msg.server_iteration, msg.isSM3);
-      this.connection.password(hashedPassword)
-    })
-  }
-
-  _handleAuthMD5SHA256Password(msg) {
-    this._checkPgPass(() => {
-      const hashedPassword = rfc5802.postgresMd5Sha256PasswordHash(this.password, msg.random64code, msg.salt);
       this.connection.password(hashedPassword)
     })
   }

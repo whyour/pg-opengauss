@@ -24,8 +24,6 @@ import {
   BackendMessage,
   MessageName,
   AuthenticationMD5Password,
-  AuthenticationSHA256Password,
-  AuthenticationMD5SHA256Password,
   NoticeMessage,
 } from './messages'
 import { BufferReader } from './buffer-reader'
@@ -308,14 +306,12 @@ export class Parser {
 
   public parseAuthenticationResponse(offset: number, length: number, bytes: Buffer) {
     this.reader.setBuffer(offset, bytes)
-
     const code = this.reader.int32()
     // TODO(bmc): maybe better types here
     const message: BackendMessage & any = {
       name: 'authenticationOk',
       length,
     }
-    var isSM3 = false;
 
     switch (code) {
       case 0: // AuthenticationOk
@@ -332,29 +328,26 @@ export class Parser {
           return new AuthenticationMD5Password(length, salt)
         }
         break
-      case 13: // In openGauss, code 13 is auth in sm3 method, we can merge it in to SHA256 method with `isSM3` varible
-        isSM3 = true;
-      case 10: // AuthenticationSHA256Password // In openGauss, code 10 is auth in sha256 method
-        message.name = 'authenticationSHA256Password'
-        // Read the params from the Stream.
-        // Based on jdbc org.postgresql.core.v3.ConnectionFactoryImpl.doAuthentication
-        // case AUTH_REQ_SHA256 (10)
-	      const passwordStoredMethod = this.reader.int32();
-        const random64code = this.reader.bytes(64).toString();
-        const token = this.reader.bytes(8).toString();
-        // const serverIteration = this.reader.int32(); // I don't know why it can't get the right value, just hard code it to default, sry.
+      case 10: // AuthenticationSASL
+        message.name = 'authenticationSASL'
+        message.mechanisms = []
+        let mechanism: string
+        do {
+          mechanism = this.reader.cstring()
 
-        // Hard Code Server Iteration to the Default Value
-        // From openGauss-server/src/include/libpq/sha2.h -> #define ITERATION_COUNT 10000
-        const serverIteration = 10000;
-
-        return new AuthenticationSHA256Password(length, random64code, token, serverIteration, isSM3);
-      case 11: // AUTH_REQ_MD5_SHA256
-        message.name = 'authenticationMD5SHA256Password'
-        const md5_random64code = this.reader.bytes(64).toString();
-        const md5Salt = this.reader.bytes(4);
-
-        return new AuthenticationMD5SHA256Password(length, md5_random64code, md5Salt);
+          if (mechanism) {
+            message.mechanisms.push(mechanism)
+          }
+        } while (mechanism)
+        break
+      case 11: // AuthenticationSASLContinue
+        message.name = 'authenticationSASLContinue'
+        message.data = this.reader.string(length - 8)
+        break
+      case 12: // AuthenticationSASLFinal
+        message.name = 'authenticationSASLFinal'
+        message.data = this.reader.string(length - 8)
+        break
       default:
         throw new Error('Unknown authenticationOk message type ' + code)
     }

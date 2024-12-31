@@ -21,12 +21,11 @@
   "main": "./lib",
   "dependencies": {
     "buffer-writer": "2.0.0",
-    "gm-crypto": "^0.1.8",
     "packet-reader": "1.0.0",
     "pg-connection-string": "^2.5.0",
     "pg-pool": "^3.3.0",
     "pg-protocol": "^1.5.0",
-    "pg-types": "^2.2.0",
+    "pg-types": "^2.1.0",
     "pgpass": "1.x"
   },
   "devDependencies": {

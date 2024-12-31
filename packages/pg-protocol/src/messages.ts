@@ -22,8 +22,6 @@ export type MessageName =
   | 'copyOutResponse'
   | 'authenticationOk'
   | 'authenticationMD5Password'
-  | 'authenticationSHA256Password'
-  | 'authenticationMD5SHA256Password'
   | 'authenticationCleartextPassword'
   | 'authenticationSASL'
   | 'authenticationSASLContinue'
@@ -177,15 +175,6 @@ export class AuthenticationMD5Password implements BackendMessage {
   constructor(public readonly length: number, public readonly salt: Buffer) {}
 }
 
-export class AuthenticationSHA256Password implements BackendMessage {
-  public readonly name: MessageName = 'authenticationSHA256Password'
-  constructor(public readonly length: number, public readonly random64code: String, public readonly token: String, public readonly server_iteration: Number, public readonly isSM3: Boolean) {}
-}
-
-export class AuthenticationMD5SHA256Password implements BackendMessage {
-  public readonly name: MessageName = 'authenticationMD5SHA256Password'
-  constructor(public readonly length: number, public readonly random64code: String, public readonly salt: Buffer) {}
-}
 export class BackendKeyDataMessage {
   public readonly name: MessageName = 'backendKeyData'
   constructor(public readonly length: number, public readonly processID: number, public readonly secretKey: number) {}
