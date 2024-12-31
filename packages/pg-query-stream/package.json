@@ -1,6 +1,6 @@
 {
   "name": "pg-query-stream",
-  "version": "4.7.1",
+  "version": "4.8.0",
   "private": true,
   "description": "Postgres query result returned as readable stream",
   "main": "./dist/index.js",
@@ -47,6 +47,6 @@
     "pg": "^8"
   },
   "dependencies": {
-    "pg-cursor": "^2.12.1"
+    "pg-cursor": "^2.13.0"
   }
 }
