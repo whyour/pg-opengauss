@@ -17,6 +17,7 @@ class Cursor extends EventEmitter {
     this._queue = []
     this.state = 'initialized'
     this._result = new Result(this._conf.rowMode, this._conf.types)
+    this._Promise = this._conf.Promise || global.Promise
     this._cb = null
     this._rows = null
     this._portal = null
@@ -85,6 +86,8 @@ class Cursor extends EventEmitter {
   }
 
   _closePortal() {
+    if (this.state === 'done') return
+
     // because we opened a named portal to stream results
     // we need to close the same named portal.  Leaving a named portal
     // open can lock tables for modification if inside a transaction.
@@ -96,6 +99,8 @@ class Cursor extends EventEmitter {
     if (this.state !== 'error') {
       this.connection.sync()
     }
+
+    this.state = 'done'
   }
 
   handleRowDescription(msg) {
@@ -146,6 +151,9 @@ class Cursor extends EventEmitter {
   }
 
   handleError(msg) {
+    // If this cursor has already closed, don't try to handle the error.
+    if (this.state === 'done') return
+
     // If we're in an initialized state we've never been submitted
     // and don't have a connection instance reference yet.
     // This can happen if you queue a stream and close the client before
@@ -166,8 +174,10 @@ class Cursor extends EventEmitter {
     }
     // dispatch error to all waiting callbacks
     for (let i = 0; i < this._queue.length; i++) {
-      this._queue.pop()[1](msg)
+      const queuedCallback = this._queue[i][1]
+      queuedCallback.call(this, msg)
     }
+    this._queue.length = 0
 
     if (this.listenerCount('error') > 0) {
       // only dispatch error events if we have a listener
@@ -198,38 +208,51 @@ class Cursor extends EventEmitter {
   }
 
   close(cb) {
+    let promise
+
+    if (!cb) {
+      promise = new this._Promise((resolve, reject) => {
+        cb = (err) => (err ? reject(err) : resolve())
+      })
+    }
+
     if (!this.connection || this.state === 'done') {
-      if (cb) {
-        return setImmediate(cb)
-      } else {
-        return
-      }
+      setImmediate(cb)
+      return promise
     }
 
     this._closePortal()
-    this.state = 'done'
-    if (cb) {
-      this.connection.once('readyForQuery', function () {
-        cb()
-      })
-    }
+    this.connection.once('readyForQuery', function () {
+      cb()
+    })
+
+    // Return the promise (or undefined)
+    return promise
   }
 
   read(rows, cb) {
+    let promise
+
+    if (!cb) {
+      promise = new this._Promise((resolve, reject) => {
+        cb = (err, rows) => (err ? reject(err) : resolve(rows))
+      })
+    }
+
     if (this.state === 'idle' || this.state === 'submitted') {
-      return this._getRows(rows, cb)
-    }
-    if (this.state === 'busy' || this.state === 'initialized') {
-      return this._queue.push([rows, cb])
-    }
-    if (this.state === 'error') {
-      return setImmediate(() => cb(this._error))
-    }
-    if (this.state === 'done') {
-      return setImmediate(() => cb(null, []))
+      this._getRows(rows, cb)
+    } else if (this.state === 'busy' || this.state === 'initialized') {
+      this._queue.push([rows, cb])
+    } else if (this.state === 'error') {
+      setImmediate(() => cb(this._error))
+    } else if (this.state === 'done') {
+      setImmediate(() => cb(null, []))
     } else {
       throw new Error('Unknown state: ' + this.state)
     }
+
+    // Return the promise (or undefined)
+    return promise
   }
 }
 

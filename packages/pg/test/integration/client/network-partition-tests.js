@@ -2,6 +2,7 @@
 var buffers = require('../../test-buffers')
 var helper = require('./test-helper')
 var suite = new helper.Suite()
+const assert = require('assert')
 
 var net = require('net')
 
@@ -39,14 +40,13 @@ Server.prototype.start = function (cb) {
     }.bind(this)
   )
 
-  var port = 54321
-
-  var options = {
-    host: 'localhost',
-    port: port,
-  }
-  this.server.listen(options.port, options.host, function () {
-    cb(options)
+  const host = 'localhost'
+  this.server.listen({ host, port: 0 }, () => {
+    const port = this.server.address().port
+    cb({
+      host,
+      port,
+    })
   })
 }
 
