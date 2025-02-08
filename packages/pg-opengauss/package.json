@@ -1,6 +1,6 @@
 {
   "name": "pg-opengauss",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "PostgreSQL client - pure javascript & libpq with the same API",
   "keywords": [
     "database",
@@ -9,7 +9,8 @@
     "postgre",
     "postgres",
     "postgresql",
-    "rdbms"
+    "rdbms",
+    "opengauss"
   ],
   "homepage": "https://github.com/whyour/pg-opengauss",
   "repository": {
