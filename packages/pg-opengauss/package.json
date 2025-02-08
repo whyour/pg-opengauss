@@ -1,6 +1,6 @@
 {
   "name": "pg-opengauss",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "PostgreSQL client - pure javascript & libpq with the same API",
   "keywords": [
     "database",
