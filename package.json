@@ -1,10 +1,10 @@
 {
-  "name": "node-postgres",
-  "description": "node postgres monorepo",
+  "name": "pg-opengauss",
+  "description": "node pg-opengauss monorepo",
   "main": "index.js",
   "private": true,
-  "repository": "git@github.com:brianc/node-postgres.git",
-  "author": "Brian M. Carlson <brian.m.carlson@gmail.com>",
+  "repository": "git@github.com:whyour/pg-opengauss.git",
+  "author": "whyour <imwhyour@gmail.com>",
   "license": "MIT",
   "workspaces": [
     "packages/*"
