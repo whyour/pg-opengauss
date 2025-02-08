@@ -2,7 +2,7 @@
 
 var EventEmitter = require('events').EventEmitter
 
-const { parse, serialize } = require('../../opengauss-protocol/dist')
+const { parse, serialize } = require('pg-opengauss-protocol')
 const { getStream, getSecureStream } = require('./stream')
 
 const flushBuffer = serialize.flush()
